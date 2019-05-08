@@ -166,23 +166,40 @@ namespace DesafioDojo
                     fator += 0.8;
                 }                
             }
-            HttpClient hc = new HttpClient();            
-            HttpResponseMessage response = await hc.GetAsync(string.Format("https://viacep.com.br/ws/{0}/json/", CEP));
-            string content = await response.Content.ReadAsStringAsync();   
+            string content = "";
+            try
+            {
+                HttpClient hc = new HttpClient();
+                HttpResponseMessage response = await hc.GetAsync(string.Format("https://viacep.com.br/ws/{0}/json/", CEP));
+                content = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception)
+            { }
+             
             if(string.IsNullOrEmpty(content))
             {
                 return 0;
             }
-            JObject jo = JObject.Parse(content);
-            string cidade = (string)jo["localidade"];
-            if (cidade == "São Paulo")
+
+            JObject jo;
+            try
             {
-                fator += 0.3;
+                jo = JObject.Parse(content);
+                string cidade = (string)jo["localidade"];
+                if (cidade == "São Paulo")
+                {
+                    fator += 0.3;
+                }
+                if (cidade == "Osasco")
+                {
+                    fator += 0.6;
+                }
             }
-            if (cidade == "Osasco")
+            catch (Exception ex)
             {
-                fator += 0.6;
+                throw ex;
             }
+                        
             return 914.18 * fator;
         }
 
